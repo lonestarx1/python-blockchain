@@ -1,5 +1,8 @@
+import json
 from flask import Flask, jsonify, request
 import uuid
+
+import requests
 from blockchain import Blockchain
 
 
@@ -80,8 +83,48 @@ def chain():
         'chain': blockchain.chain
     }
     return jsonify(response), 200
-    
 
+
+@app.route('/nodes/register', methods=['POST'])
+def registerNodes():
+    ''''
+    - Receives a list of new node addresses and register them on the netwok
+    '''
+    node_addresses = request.get_json().get('nodes')
+
+    # handle bad requests
+    if not node_addresses:
+        return "Node addresses missing", 400
+    
+    # register the addresses
+    for address in node_addresses:
+        blockchain.registerNode(address)
+    
+    response = {
+        'message': 'Nodes added to the network',
+        'current_nodes':list(blockchain.nodes)
+    }
+    return jsonify(response), 200
+
+
+@app.route('nodes/consensus', methods=['GET'])
+def consensus():
+    prev_chain_length = len(blockchain.chain)
+    blockchain.reachConsensus()
+    new_chain_length = len(blockchain.chain)
+    if new_chain_length > prev_chain_length:
+        response = {
+            'message': 'Our chain was replaced',
+            'previous_chain_length': prev_chain_length,
+            'new_chain_length': new_chain_length,
+            'new_chain': blockchain.chain
+        }
+    else:
+        response = {
+            'message': 'Our chain leads the network',
+            'chain': blockchain.chain
+        }
+    return jsonify(response), 200
 
 
 if __name__ == '__main__':
