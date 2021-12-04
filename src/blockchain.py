@@ -22,6 +22,7 @@ class Blockchain:
             'transactions': self.pending_transactions,
             'proof': proof,
             'previous_hash': previous_hash or self.hash(self.chain[-1]), # todo: check is re-calculating the hash always is better
+            'nonce': 0
         }
         self.chain.append(block)
         self.pending_transactions = []
@@ -50,3 +51,13 @@ class Blockchain:
         '''
         block_string = json.dumps(block, sort_keys=True).encode()
         return hashlib.sha256(block_string).hexdigest()
+
+
+    
+    def proofOfWork(self, block):
+        '''
+        - Find a number 'nonce' such that when added to the block and hashed, the result is a string of 4 leading zeros
+        '''
+        while self.hash(block)[:4] != '0000':
+            block['nonce'] += 1
+        return block['nonce']
