@@ -1,12 +1,15 @@
 # Blockchain build in python
 import time
-
+import hashlib
+import json
 
 class Blockchain:
 
     def __init__(self):
         self.chain = []
         self.pending_transactions = []
+        # genesis block
+        self.registerBlock(proof=100, previous_hash=1)
     
     def registerBlock(self, proof, previous_hash=None):
         '''
@@ -36,20 +39,14 @@ class Blockchain:
             'amount': amount
         }
         self.pending_transactions.append(transaction)
-        last_block =  self.retrieveLastBlock()
-        return last_block['indx'] + 1
+        return self.chain[-1]['indx'] + 1
 
     
     @staticmethod
     def hash(block):
         '''
-        Hashes a block of transactions
+        - Hashes a block of transactions, returning SHA-256 hash
+        - sorting dict keys makes for consistent hash
         '''
-        pass
-
-
-    def retrieveLastBlock(self):
-        '''
-        Returns the last block in the chain
-        '''
-        pass
+        block_string = json.dumps(block, sort_keys=True).encode()
+        return hashlib.sha256(block_string).hexdigest()
