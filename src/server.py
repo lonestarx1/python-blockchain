@@ -9,7 +9,7 @@ node_id = str(uuid.uuid4()).replace('-', '')
 
 
 # Instantiate the Blockchain
-blockchain = Blockchain()
+blockchain = Blockchain(mining_difficulty=3)
 print("Blockchain initiated")
 print("Current Ledger:", blockchain.chain)
 
@@ -75,7 +75,12 @@ def chain():
     '''
     - Returns the full blockchain of this node
     '''
-    pass
+    response = {
+        'chain_length': len(blockchain.chain),
+        'chain': blockchain.chain
+    }
+    return jsonify(response), 200
+    
 
 
 
