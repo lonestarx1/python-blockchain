@@ -120,10 +120,13 @@ class Blockchain:
 
         # verify the chains from all nodes
         for node in nodes_on_network:
-            res = requests.get(f'http://{node}/chain')
-            if res.status_code != 200:
+            try:
+                res = requests.get(f'http://{node}/chain')
+                if res.status_code != 200:
+                    continue
+                chain, length = res.json()['chain'], res.json()['length']
+            except:
                 continue
-            chain, length = res.json()['chain'], res.json()['length']
             
             # record any valid chain longer than the best we have so far
             if length > len(longest_valid_chain) and self.isValidChain(chain):
