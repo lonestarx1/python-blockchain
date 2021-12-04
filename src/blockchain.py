@@ -2,6 +2,7 @@
 import time
 import hashlib
 import json
+from urllib.parse import urlparse
 
 class Blockchain:
 
@@ -12,6 +13,7 @@ class Blockchain:
         self.mining_difficulty = mining_difficulty
         self.chain = []
         self.pending_transactions = []
+        self.nodes = set()
         genesis_block = {
             'indx': len(self.chain) + 1,
             'timestamp': time.time(),
@@ -76,3 +78,33 @@ class Blockchain:
                 break
             block['nonce'] += 1
         return block
+
+
+    def registerNode(self, node_address):
+        '''
+        - Add a new node to the list of nodes (address ex: http://128.123.0.5:5000) -> netloc:128.123.0.5:5000
+        - Returns True if the node is not already in the list
+        '''
+        parsed_url = urlparse(node_address)
+        self.nodes.add(parsed_url.netloc)
+
+    
+    def isValidChain(self, chain):
+        '''
+        - Checks is the given chain is valid.
+        - Returns True if the chain is valid, False otherwise
+        '''
+        prev_block = self.chain[0]
+        cur_block_indx = 1
+        while cur_block_indx < len(self.chain):
+            # check if its "prev_hash" is the correct hash of the previous block
+            if self.chain[cur_block_indx]['previous_hash'] != self.hash(prev_block):
+                return False
+            # check if the proof of work has been done correctly for cur_block
+            cur_block_hash = self.hash(self.chain[cur_block_indx])
+            if cur_block_hash[:self.mining_difficulty] != "0" * self.mining_difficulty:
+                return False
+            # if all checks out advance to the next block
+            prev_block = self.chain[cur_block_indx]
+            cur_block_indx += 1
+        return True
