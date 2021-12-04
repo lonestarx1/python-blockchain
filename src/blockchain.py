@@ -2,6 +2,7 @@
 import time
 import hashlib
 import json
+import requests
 from urllib.parse import urlparse
 
 class Blockchain:
@@ -108,3 +109,25 @@ class Blockchain:
             prev_block = self.chain[cur_block_indx]
             cur_block_indx += 1
         return True
+
+    def reachConsensus(self):
+        '''
+        - A consensus algorithm that replaces the current node's chain with the longest valid chain on the network
+        - visits all nodes on the network, download their chain, verifies them and keep the longest
+        '''
+        nodes_on_network = self.nodes
+        longest_valid_chain = self.chain
+
+        # verify the chains from all nodes
+        for node in nodes_on_network:
+            res = requests.get(f'http://{node}/chain')
+            if res.status_code != 200:
+                continue
+            chain, length = res.json()['chain'], res.json()['length']
+            
+            # record any valid chain longer than the best we have so far
+            if length > len(longest_valid_chain) and self.isValidChain(chain):
+                longest_valid_chain = chain
+            
+            # replace the current node's chain with the winner
+            self.chain = longest_valid_chain
