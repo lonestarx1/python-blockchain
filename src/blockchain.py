@@ -5,10 +5,11 @@ import json
 
 class Blockchain:
 
-    def __init__(self):
+    def __init__(self, mining_difficulty):
         '''
         - Initialize the blockchain with a genesis block
         '''
+        self.mining_difficulty = mining_difficulty
         self.chain = []
         self.pending_transactions = []
         genesis_block = {
@@ -68,6 +69,10 @@ class Blockchain:
         '''
         - Find a number 'nonce' such that when added to the block and hashed, the result is a string of 4 leading zeros
         '''
-        while self.hash(block)[:4] != '0000':
+        while True:
+            cur_hash = self.hash(block)
+            print(cur_hash)
+            if cur_hash[:self.mining_difficulty] == '0' * self.mining_difficulty:
+                break
             block['nonce'] += 1
         return block
