@@ -1,8 +1,6 @@
 import json
 from flask import Flask, jsonify, request
 import uuid
-
-import requests
 from blockchain import Blockchain
 
 
@@ -107,7 +105,7 @@ def registerNodes():
     return jsonify(response), 200
 
 
-@app.route('nodes/consensus', methods=['GET'])
+@app.route('/nodes/consensus', methods=['GET'])
 def consensus():
     prev_chain_length = len(blockchain.chain)
     blockchain.reachConsensus()
