@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify, request
 import uuid
 from blockchain import Blockchain
 
@@ -25,7 +25,27 @@ def newTransaction():
     '''
     - Handles a request to register a new transaction in the pending block
     '''
-    pass
+    required_fields = ['sender', 'receiver', 'amount']
+    provided_fields = request.get_json()
+
+    # handle some types of bad requests
+    if not all(field in provided_fields for field in required_fields):
+        return 'Required data missing', 400
+    if not provided_fields['sender'] or type(provided_fields['sender']) != str:
+        return 'Invalid sender address', 400
+    if not provided_fields['receiver'] or type(provided_fields['receiver']) != str:
+        return 'Invalid receiver address', 400
+    if not provided_fields['amount'] or type(provided_fields['amount']) != int:
+        return 'Invalid amount', 400
+
+    # add the transaction to the pending block
+    block_indx = blockchain.registerTransaction(
+        provided_fields['sender'],
+        provided_fields['receiver'],
+        provided_fields['amount']
+    )
+    response = {'message': f'Transaction added to pending block: {block_indx}'}
+    return jsonify(response), 201
 
 
 @app.route('/chain', methods=['GET'])
