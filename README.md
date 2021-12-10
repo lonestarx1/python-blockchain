@@ -40,7 +40,8 @@ This is a sample project demonstrating the core ideas of the blockchain.
 - this will start a development server at your local IP address port 5000.
 - this server can be reached by any other machine on the same network.
 - you can control the mining difficulty by passing a parameter when starting the server: `python single_node/server.py 3`
-  - I recommend trying 3 & 4 (5 is too difficult)
+  - I recommend trying 3,4 and 5
+  - If no value is passed, the default difficulty is 4
 
 
 You can interact with the blockchain by calling the available endpoints. below are the samples of endpoints available and the response they return
