@@ -17,44 +17,15 @@ if len(sys.argv) > 1:
 blockchain = Blockchain(mining_difficulty=4)
 print(f'Blockchain initiated. Mining Difficulty: {mining_difficulty}')
 
-@app.route('/mine', methods=['GET'])
-def mine():
+
+@app.route('/chain', methods=['GET'])
+def chain():
     '''
-    - Generates a block from pending transactions
-    - Runs the proof of work algorithm to find the correct nonce (hence validating the block)
-    - Adds the block to the chain
-    - Rewards the miner by adding a transaction granting the miner a coin
+    - Returns the full blockchain of this node
     '''
-    non_validated_new_block = blockchain.generateBlock()
-    validated_new_block     = blockchain.proofOfWork(non_validated_new_block)
-    blockchain.registerBlock(validated_new_block)
-    reward_transaction = {
-        'sender': 'MINING',
-        'receiver': node_id,
-        'amount': 1
-    }
-    blockchain.registerTransaction(reward_transaction)
-    block_index = validated_new_block['indx']
     response = {
-        'message': f'Block {block_index} added to the blockchain',
-        'index': block_index,
-        'transactions': validated_new_block['transactions'],
-        'nonce': validated_new_block['nonce'],
-        'previous_hash': validated_new_block['previous_hash']
-    }
-    return jsonify(response), 200
-
-
-
-
-@app.route('/transactions', methods=['GET'])
-def getTransactions():
-    '''
-    - Returns a list of all pending transactions
-    '''
-    transactions = blockchain.pending_transactions
-    response = {
-        'transactions': transactions
+        'chain_length': len(blockchain.chain),
+        'chain': blockchain.chain
     }
     return jsonify(response), 200
 
@@ -90,17 +61,45 @@ def newTransaction():
 
 
 
-@app.route('/chain', methods=['GET'])
-def chain():
+@app.route('/transactions', methods=['GET'])
+def getTransactions():
     '''
-    - Returns the full blockchain of this node
+    - Returns a list of all pending transactions
     '''
+    transactions = blockchain.pending_transactions
     response = {
-        'chain_length': len(blockchain.chain),
-        'chain': blockchain.chain
+        'transactions': transactions
     }
     return jsonify(response), 200
 
+
+
+@app.route('/mine', methods=['GET'])
+def mine():
+    '''
+    - Generates a block from pending transactions
+    - Runs the proof of work algorithm to find the correct nonce (hence validating the block)
+    - Adds the block to the chain
+    - Rewards the miner by adding a transaction granting the miner a coin
+    '''
+    non_validated_new_block = blockchain.generateBlock()
+    validated_new_block     = blockchain.proofOfWork(non_validated_new_block)
+    blockchain.registerBlock(validated_new_block)
+    reward_transaction = {
+        'sender': 'MINING',
+        'receiver': node_id,
+        'amount': 1
+    }
+    blockchain.registerTransaction(reward_transaction)
+    block_index = validated_new_block['indx']
+    response = {
+        'message': f'Block {block_index} added to the blockchain',
+        'index': block_index,
+        'transactions': validated_new_block['transactions'],
+        'nonce': validated_new_block['nonce'],
+        'previous_hash': validated_new_block['previous_hash']
+    }
+    return jsonify(response), 200
 
 
 
@@ -117,48 +116,6 @@ def balance():
     return jsonify(response), 200
 
 
-
-@app.route('/nodes/register', methods=['POST'])
-def registerNodes():
-    ''''
-    - Receives a list of new node addresses and register them on the netwok
-    '''
-    node_addresses = request.get_json().get('nodes')
-
-    # handle bad requests
-    if not node_addresses:
-        return "Node addresses missing", 400
-    
-    # register the addresses
-    for address in node_addresses:
-        blockchain.registerNode(address)
-    
-    response = {
-        'message': 'Nodes added to the network',
-        'current_nodes':list(blockchain.nodes)
-    }
-    return jsonify(response), 200
-
-
-
-@app.route('/nodes/consensus', methods=['GET'])
-def consensus():
-    prev_chain_length = len(blockchain.chain)
-    blockchain.reachConsensus()
-    new_chain_length = len(blockchain.chain)
-    if new_chain_length > prev_chain_length:
-        response = {
-            'message': 'Our chain was replaced',
-            'previous_chain_length': prev_chain_length,
-            'new_chain_length': new_chain_length,
-            'new_chain': blockchain.chain
-        }
-    else:
-        response = {
-            'message': 'Our chain leads the network',
-            'chain': blockchain.chain
-        }
-    return jsonify(response), 200
 
 
 if __name__ == '__main__':
