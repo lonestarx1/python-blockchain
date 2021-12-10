@@ -10,7 +10,7 @@ node_id = str(uuid.uuid4()).replace('-', '')
 
 
 # Instantiate the Blockchain
-blockchain = Blockchain(mining_difficulty=3)
+blockchain = Blockchain(mining_difficulty=4)
 print("Blockchain initiated")
 print("Current Ledger:", blockchain.chain)
 
@@ -23,11 +23,7 @@ def mine():
     - Rewards the miner by adding a transaction granting the miner a coin
     '''
     non_validated_new_block = blockchain.generateBlock()
-    print("New block generated:", non_validated_new_block)
-
     validated_new_block     = blockchain.proofOfWork(non_validated_new_block)
-    print("New block validated:", validated_new_block)
-
     blockchain.registerBlock(validated_new_block)
     reward_transaction = {
         'sender': 'MINING',
@@ -46,6 +42,21 @@ def mine():
     return jsonify(response), 200
 
 
+
+
+@app.route('/transactions', methods=['GET'])
+def getTransactions():
+    '''
+    - Returns a list of all pending transactions
+    '''
+    transactions = blockchain.pending_transactions
+    response = {
+        'transactions': transactions
+    }
+    return jsonify(response), 200
+
+
+
 @app.route('/transactions/new', methods=['POST'])
 def newTransaction():
     '''
@@ -53,7 +64,6 @@ def newTransaction():
     '''
     required_fields = ['sender', 'receiver', 'amount']
     provided_fields = request.get_json()
-    print("New transaction received:", provided_fields)
 
     # handle some types of bad requests
     if not all(field in provided_fields for field in required_fields):
@@ -62,13 +72,19 @@ def newTransaction():
         return 'Invalid sender address', 400
     if not provided_fields['receiver'] or type(provided_fields['receiver']) != str:
         return 'Invalid receiver address', 400
-    if not provided_fields['amount'] or type(provided_fields['amount']) != int:
+    if not provided_fields['amount'] or type(provided_fields['amount']) != int or provided_fields['amount'] <= 0:
         return 'Invalid amount', 400
+
+    # check is sender has enough coins
+    sender_balance = blockchain.getBalance(provided_fields['sender'])
+    if sender_balance < provided_fields['amount']:
+        return 'Insufficient funds', 400
 
     # add the transaction to the pending block
     block_indx = blockchain.registerTransaction(provided_fields)
-    response = {'message': f'Transaction added to pending block: {block_indx}'}
+    response = {'message': f'Transaction added to pending block: #{block_indx}'}
     return jsonify(response), 201
+
 
 
 @app.route('/chain', methods=['GET'])
@@ -81,6 +97,22 @@ def chain():
         'chain': blockchain.chain
     }
     return jsonify(response), 200
+
+
+
+
+@app.route('/balance', methods=['GET'])
+def balance():
+    '''
+    - Returns the balance of the node
+    '''
+    address = request.args.get('address')
+    balance = blockchain.getBalance(address)
+    response = {
+        'balance': balance
+    }
+    return jsonify(response), 200
+
 
 
 @app.route('/nodes/register', methods=['POST'])
@@ -105,6 +137,7 @@ def registerNodes():
     return jsonify(response), 200
 
 
+
 @app.route('/nodes/consensus', methods=['GET'])
 def consensus():
     prev_chain_length = len(blockchain.chain)
@@ -126,4 +159,4 @@ def consensus():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)
+    app.run(host='0.0.0.0', port=5000)
