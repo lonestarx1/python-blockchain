@@ -2,6 +2,7 @@ import json
 from flask import Flask, jsonify, request
 import uuid
 from blockchain import Blockchain
+import sys
 
 
 # Creating a node on the network, with a uniuqe id
@@ -10,9 +11,11 @@ node_id = str(uuid.uuid4()).replace('-', '')
 
 
 # Instantiate the Blockchain
+mining_difficulty = 4
+if len(sys.argv) > 1:
+    mining_difficulty = int(sys.argv[1])
 blockchain = Blockchain(mining_difficulty=4)
-print("Blockchain initiated")
-print("Current Ledger:", blockchain.chain)
+print(f'Blockchain initiated. Mining Difficulty: {mining_difficulty}')
 
 @app.route('/mine', methods=['GET'])
 def mine():
