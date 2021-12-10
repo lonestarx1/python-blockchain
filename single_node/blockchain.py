@@ -85,7 +85,8 @@ class Blockchain:
 
     def proofOfWork(self, block):
         '''
-        - Find a number 'nonce' such that when added to the block and hashed, the result is a string of 4 leading zeros
+        - Find a number 'nonce' such that when added to the block and hashed, 
+        the result is a string of 4 leading zeros
         '''
         while True:
             cur_hash = self.hash(block)
