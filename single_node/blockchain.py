@@ -138,38 +138,3 @@ class Blockchain:
             prev_block = self.chain[cur_block_indx]
             cur_block_indx += 1
         return True
-
-
-    def registerNode(self, node_address):
-        '''
-        - Add a new node to the list of nodes (address ex: http://128.123.0.5:5000) -> netloc:128.123.0.5:5000
-        - Returns True if the node is not already in the list
-        '''
-        parsed_url = urlparse(node_address)
-        self.nodes.add(parsed_url.netloc)
-
-
-    def reachConsensus(self):
-        '''
-        - A consensus algorithm that replaces the current node's chain with the longest valid chain on the network
-        - visits all nodes on the network, download their chain, verifies them and keep the longest
-        '''
-        nodes_on_network = self.nodes
-        longest_valid_chain = self.chain
-
-        # verify the chains from all nodes
-        for node in nodes_on_network:
-            try:
-                res = requests.get(f'http://{node}/chain')
-                if res.status_code != 200:
-                    continue
-                chain, length = res.json()['chain'], res.json()['length']
-            except:
-                continue
-            
-            # record any valid chain longer than the best we have so far
-            if length > len(longest_valid_chain) and self.isValidChain(chain):
-                longest_valid_chain = chain
-            
-            # replace the current node's chain with the winner
-            self.chain = longest_valid_chain
