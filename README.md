@@ -5,7 +5,7 @@ This is a sample project demonstrating the core ideas of the blockchain.
 
 
 ### What Is a Blockchain?
-- A blockchain is a distributed ledger that is shared among the nodes of a computer network. 
+- A blockchain is a distributed ledger that is shared among the nodes/computers on a network. 
 - A blockchain stores information electronically in digital format. 
 - Blockchains are best known for their crucial role in cryptocurrency systems, such as Bitcoin, for maintaining a secure and decentralized record of transactions.
 
