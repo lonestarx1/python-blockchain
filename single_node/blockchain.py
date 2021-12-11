@@ -14,7 +14,6 @@ class Blockchain:
         self.mining_difficulty = mining_difficulty
         self.chain = []
         self.pending_transactions = []
-        self.nodes = set()
         genesis_block = {
             'indx': 1,
             'timestamp': 1639170932.3943253,
