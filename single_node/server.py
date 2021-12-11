@@ -1,4 +1,3 @@
-import json
 from flask import Flask, jsonify, request
 import uuid
 from blockchain import Blockchain

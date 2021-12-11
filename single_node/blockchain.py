@@ -2,8 +2,6 @@
 import time
 import hashlib
 import json
-import requests
-from urllib.parse import urlparse
 
 class Blockchain:
 
